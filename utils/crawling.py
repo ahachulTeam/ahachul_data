@@ -16,7 +16,7 @@ def crawl(option):
             start += 1
             
             if start % 100 == 0:
-                print('----------------------{} pages crawled----------------------'.format(start * 100))
+                print('----------------------{} pages crawled----------------------'.format(start))
             
         crawl.toJson()
         
