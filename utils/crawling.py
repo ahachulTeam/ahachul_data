@@ -28,7 +28,7 @@ def crawl(option):
             if not updater.isCompleteUpdate(ids):
                 break
             start += 1
-        updater.updateJson()
+        updater.makeNewJson()
         print('complete')
         
     else:

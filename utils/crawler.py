@@ -93,6 +93,6 @@ class Updater:
             
         return True
     
-    def updateJson(self):
-        with open(os.path.join(cfg.ROOTDATA, cfg.ALLDATA), 'w', encoding='utf-8') as f:
-            json.dump(self.data, f, ensure_ascii=False, indent=4)
+    def makeNewJson(self):
+        with open(os.path.join(cfg.ROOTDATA, cfg.NEWDATA), 'w', encoding='utf-8') as f:
+            json.dump(self.new_datas, f, ensure_ascii=False, indent=4)
