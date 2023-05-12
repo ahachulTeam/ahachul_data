@@ -31,7 +31,7 @@ def getIds(page):
     url = f'https://www.lost112.go.kr/find/findList.do?PLACE_SE_CD=LL1003&pageIndex={page}'
     soup = wait(url)
     return [i.find('td').text for i in soup.find('table', {'class': 'type01'}).find('tbody').find_all('tr')] \
-        if isEnd(soup) else [] # 관리번호
+        if isEnd(soup) else []
 
 
 def getInfo(id):
