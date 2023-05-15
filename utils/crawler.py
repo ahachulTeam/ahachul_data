@@ -17,14 +17,18 @@ def isEnd(soup):
 
 
 def wait(url):
+    isEscapeLoop = False
     while True:
         try:
             req = requests.get(url, verify=False)
             soup = BeautifulSoup(req.text, 'html.parser')
+            if isEscapeLoop:
+                print('Successfully connect in page {}'.format(url))
             return soup
         except Exception as e:
             print('"{}" error occurred in page {}, reconnect ... '.format(e, url))
             time.sleep(3)
+            isEscapeLoop = True
 
 
 def getIds(page):
@@ -59,17 +63,18 @@ def getInfo(id):
             'phone': infos[7],
             'context': getText(soup),
             'image': cfg.LOSTURL + soup.find('p', {'class': 'lost_img'}).find('img').get('src'),
-            'source': 'lost112'
+            'source': 'lost112',
+            'page': url
             }
 
 
 class Crawler:
     def __init__(self):
-        self.info = OrderedDict()
+        self.info = []
         
     def crawlAll(self, ids):
         for id in ids:          
-            self.info[id] = getInfo(id)
+            self.info.append({id: getInfo(id)})
     
     def toJson(self):
         with open(os.path.join(cfg.ROOTDATA, cfg.ALLDATA), 'w', encoding='utf-8') as f:
@@ -81,7 +86,7 @@ class Updater:
         with open(os.path.join(cfg.ROOTDATA, cfg.ALLDATA), 'r', encoding='utf-8') as f:
             self.data = json.load(f)
         self.keys = list(self.data.keys())
-        self.new_datas = {}
+        self.new_datas = []
             
     def isCompleteUpdate(self, ids):
         for id in ids:
@@ -89,7 +94,7 @@ class Updater:
                 self.data = dict([(k, v) for k, v in self.new_datas.items()] \
                                 + [(k, v) for k, v in self.data.items()])
                 return False
-            self.new_datas[id] = getInfo(id)
+            self.new_datas.append({id: getInfo(id)})
             
         return True
     
