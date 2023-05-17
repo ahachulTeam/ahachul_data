@@ -6,8 +6,7 @@
 
 ### 2. 필요 라이브러리 설치
 ```
-pip install requests
-pip install bs4
+pip install -r requirements.txt
 ```
 ### 3. 크롤링 실행
 cmd에서 두 가지 옵션으로 크롤링 가능
