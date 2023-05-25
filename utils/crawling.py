@@ -21,7 +21,8 @@ def crawl(option):
         crawl.toJson()
         
     elif option == 'un':
-        assert os.path.isfile(os.path.join(cfg.ROOTDATA, cfg.ALLDATA)), f'{cfg.ALLDATA} file is not exist'
+        assert os.path.isfile(os.path.join(cfg.ROOTDATA, cfg.ALLDATA)) or os.path.isfile(os.path.join(cfg.ROOTDATA, cfg.NEWDATA)), \
+            'Any file does not exist in datas directory. You should crawl all data first.'
         updater = Updater()
         while True:
             ids = crawler.getIds(start)

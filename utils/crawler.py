@@ -82,9 +82,14 @@ class Crawler:
 
 class Updater:
     def __init__(self):
-        with open(os.path.join(cfg.ROOTDATA, cfg.NEWDATA), 'r', encoding='utf-8') as f:
-            self.data = json.load(f)
-        self.keys = list(map(lambda x: list(x.keys())[0], self.data))
+        if os.path.exists(os.path.join(cfg.ROOTDATA, cfg.NEWDATA)):
+            with open(os.path.join(cfg.ROOTDATA, cfg.NEWDATA), 'r', encoding='utf-8') as f:
+                self.data = json.load(f)
+        else:
+            with open(os.path.join(cfg.ROOTDATA, cfg.ALLDATA), 'r', encoding='utf-8') as f:
+                self.data = json.load(f)
+            
+        self.keys = list(map(lambda x: list(x.keys())[0], self.data))            
         self.new_datas = []
             
     def isCompleteUpdate(self, ids):
