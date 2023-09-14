@@ -10,11 +10,6 @@ import config as cfg
 warnings.filterwarnings('ignore')
 
 
-def isEnd(soup):
-    item_num = len(soup.find('table', {'class': 'type01'}).find('tbody').find_all('tr'))
-    return True if item_num > 0 else False
-
-
 def wait(url):
     isEscapeLoop = False
     while True:
@@ -33,8 +28,8 @@ def wait(url):
 def getIds(page):
     url = f'https://www.lost112.go.kr/find/findList.do?PLACE_SE_CD=LL1003&pageIndex={page}'
     soup = wait(url)
-    return [i.find('td').text for i in soup.find('table', {'class': 'type01'}).find('tbody').find_all('tr')] \
-        if isEnd(soup) else []
+    ids = [i.find('td').text for i in soup.find('table', {'class': 'type01'}).find('tbody').find_all('tr')]
+    return ids if ids != ['검색 결과가 없습니다.'] else []
 
 
 def getInfo(id):
@@ -51,7 +46,7 @@ def getInfo(id):
     soup = wait(url)
     infos = [i.text.strip() for i in soup.find_all('p', {'class': 'find02'})]
     title = soup.find('p', {'class': 'find_info_name'}).text.split(':')[-1].strip()
-        
+
     return {'title': title,
             'getDate': infos[1],
             'getPlace': infos[2],
