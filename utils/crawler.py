@@ -71,22 +71,38 @@ class Crawler:
             self.info.append({id: getInfo(id)})
     
     def toJson(self):
-        with open(os.path.join(cfg.ROOTDATA, cfg.ALLDATA), 'w', encoding='utf-8') as f:
-            json.dump(self.info, f, ensure_ascii=False, indent=4)
+        separate_data = []
+        count = 0
+        file_num = 1
+        for data in self.info:
+            count += 1
+            separate_data.append(data)
+            if count == len(self.info) // cfg.SEPARATE_NUM and file_num != cfg.SEPARATE_NUM:
+                with open(os.path.join(cfg.ROOTDATA, f'{file_num}.json'), 'w', encoding='utf-8') as file:
+                    json.dump(separate_data, file, ensure_ascii=False, indent=4)
+                    
+                count = 0
+                separate_data = []
+                file_num += 1
+        
+        with open(os.path.join(cfg.ROOTDATA, f'{file_num}.json'), 'w', encoding='utf-8') as file:
+            json.dump(separate_data, file, ensure_ascii=False, indent=4)
+
 
 
 class Updater:
     def __init__(self):
-        if os.path.exists(os.path.join(cfg.ROOTDATA, cfg.NEWDATA)):
-            with open(os.path.join(cfg.ROOTDATA, cfg.NEWDATA), 'r', encoding='utf-8') as f:
-                self.data = json.load(f)
-        else:
-            with open(os.path.join(cfg.ROOTDATA, cfg.ALLDATA), 'r', encoding='utf-8') as f:
-                self.data = json.load(f)
-            
-        self.keys = list(map(lambda x: list(x.keys())[0], self.data))            
         self.new_datas = []
-            
+        self.keys = []
+        
+        for file in os.listdir(cfg.ROOTDATA):
+            if file != 'all.json':
+                with open(os.path.join(cfg.ROOTDATA, file), 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                keys = list(map(lambda x: list(x.keys())[0], data))   
+                self.keys.extend(keys)
+
+   
     def isCompleteUpdate(self, ids):
         for id in ids:
             if id in self.keys: return False 
@@ -95,5 +111,30 @@ class Updater:
     
     def makeNewJson(self):
         updated_all_data = self.new_datas
-        with open(os.path.join(cfg.ROOTDATA, cfg.ALLDATA), 'w', encoding='utf-8') as f:
-            json.dump(updated_all_data, f, ensure_ascii=False, indent=4)
+        file_num = 1
+        
+        if len(updated_all_data) < cfg.SEPARATE_NUM:
+            with open(os.path.join(cfg.ROOTDATA, f"{file_num}.json"), 'w', encoding='utf-8') as f:
+                json.dump(updated_all_data, f, ensure_ascii=False, indent=4)
+        
+            for f_num in range(2, cfg.SEPARATE_NUM + 1):
+                with open(os.path.join(cfg.ROOTDATA, f"{f_num}.json"), 'w', encoding='utf-8') as f:
+                    json.dump({}, f, ensure_ascii=False, indent=4)
+
+        else:
+            separate_data = []
+            count = 0
+            
+            for data in updated_all_data:
+                count += 1
+                separate_data.append(data)
+                if count == len(updated_all_data) // cfg.SEPARATE_NUM and file_num != cfg.SEPARATE_NUM:
+                    with open(os.path.join(cfg.ROOTDATA, f'{file_num}.json'), 'w', encoding='utf-8') as file:
+                        json.dump(separate_data, file, ensure_ascii=False, indent=4)
+                        
+                    count = 0
+                    separate_data = []
+                    file_num += 1
+            
+            with open(os.path.join(cfg.ROOTDATA, f'{file_num}.json'), 'w', encoding='utf-8') as file:
+                json.dump(separate_data, file, ensure_ascii=False, indent=4)
