@@ -26,7 +26,7 @@ def wait(url):
 
 
 def getIds(page):
-    url = f'https://www.lost112.go.kr/find/findList.do?PLACE_SE_CD=LL1003&pageIndex={page}'
+    url = f'https://www.lost112.go.kr/find/findList.do?START_YMD={cfg.START_YMD}&PLACE_SE_CD=LL1003&pageIndex={page}'
     soup = wait(url)
     ids = [i.find('td').text for i in soup.find('table', {'class': 'type01'}).find('tbody').find_all('tr')]
     return ids if ids != ['검색 결과가 없습니다.'] else []
@@ -62,32 +62,49 @@ def getInfo(id):
             }
 
 
+def toJson(path, data):
+    def removeDuplicate(data):
+        without_duplicates = []
+        for d in data:
+            if d not in without_duplicates:
+                without_duplicates.append(d)
+        
+        return without_duplicates
+    
+    data = removeDuplicate(data)
+    with open(os.path.join(cfg.ROOTDATA, path), 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+def separate(datas):
+    separate_data = []
+    count = 0
+    file_num = 1
+    for data in datas:
+        count += 1
+        separate_data.append(data)
+        if count == len(datas) // cfg.SEPARATE_NUM and file_num != cfg.SEPARATE_NUM:
+            toJson(f'{file_num}.json', separate_data)
+                
+            count = 0
+            separate_data = []
+            file_num += 1
+
+    toJson(f'{file_num}.json', separate_data)
+
+
 class Crawler:
     def __init__(self):
         self.info = []
+        
         
     def crawlAll(self, ids):
         for id in ids:          
             self.info.append({id: getInfo(id)})
     
-    def toJson(self):
-        separate_data = []
-        count = 0
-        file_num = 1
-        for data in self.info:
-            count += 1
-            separate_data.append(data)
-            if count == len(self.info) // cfg.SEPARATE_NUM and file_num != cfg.SEPARATE_NUM:
-                with open(os.path.join(cfg.ROOTDATA, f'{file_num}.json'), 'w', encoding='utf-8') as file:
-                    json.dump(separate_data, file, ensure_ascii=False, indent=4)
-                    
-                count = 0
-                separate_data = []
-                file_num += 1
-        
-        with open(os.path.join(cfg.ROOTDATA, f'{file_num}.json'), 'w', encoding='utf-8') as file:
-            json.dump(separate_data, file, ensure_ascii=False, indent=4)
-
+    
+    def saveJson(self):
+        separate(self.info)
 
 
 class Updater:
@@ -109,32 +126,17 @@ class Updater:
             self.new_datas.append({id: getInfo(id)})
         return True
     
+    
     def makeNewJson(self):
         updated_all_data = self.new_datas
         file_num = 1
         
-        if len(updated_all_data) < cfg.SEPARATE_NUM:
-            with open(os.path.join(cfg.ROOTDATA, f"{file_num}.json"), 'w', encoding='utf-8') as f:
-                json.dump(updated_all_data, f, ensure_ascii=False, indent=4)
+        if len(updated_all_data) <= cfg.MINIMUM_DATA:
+            toJson(f'{file_num}.json', updated_all_data)
         
             for f_num in range(2, cfg.SEPARATE_NUM + 1):
-                with open(os.path.join(cfg.ROOTDATA, f"{f_num}.json"), 'w', encoding='utf-8') as f:
-                    json.dump({}, f, ensure_ascii=False, indent=4)
+                toJson(f'{f_num}.json', {})
 
         else:
-            separate_data = []
-            count = 0
-            
-            for data in updated_all_data:
-                count += 1
-                separate_data.append(data)
-                if count == len(updated_all_data) // cfg.SEPARATE_NUM and file_num != cfg.SEPARATE_NUM:
-                    with open(os.path.join(cfg.ROOTDATA, f'{file_num}.json'), 'w', encoding='utf-8') as file:
-                        json.dump(separate_data, file, ensure_ascii=False, indent=4)
-                        
-                    count = 0
-                    separate_data = []
-                    file_num += 1
-            
-            with open(os.path.join(cfg.ROOTDATA, f'{file_num}.json'), 'w', encoding='utf-8') as file:
-                json.dump(separate_data, file, ensure_ascii=False, indent=4)
+            separate(updated_all_data)
+        

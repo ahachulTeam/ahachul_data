@@ -14,11 +14,10 @@ def crawl(option):
                 break
             crawl.crawlAll(ids)
             start += 1
-            
             if start % 100 == 0:
                 print('----------------------{} pages crawled----------------------'.format(start))
             
-        crawl.toJson()
+        crawl.saveJson()
         
     elif option == 'un':
         assert not os.path.isfile(cfg.ROOTDATA), \
@@ -26,7 +25,7 @@ def crawl(option):
         updater = Updater()
         while True:
             ids = crawler.getIds(start)
-            if not updater.isCompleteUpdate(ids):
+            if not updater.isCompleteUpdate(ids) or not ids:
                 break
             start += 1
         updater.makeNewJson()
