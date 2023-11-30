@@ -42,12 +42,14 @@ def getInfo(id):
         except AttributeError:
             return div.text.strip()
 
+
     url = f'https://www.lost112.go.kr/find/findDetail.do?ATC_ID={id}&FD_SN=1'
     soup = wait(url)
     infos = [i.text.strip() for i in soup.find_all('p', {'class': 'find02'})]
     title = soup.find('p', {'class': 'find_info_name'}).text.split(':')[-1].strip()
 
-    return {'title': title,
+    return {'ID': id,
+            'title': title,
             'getDate': infos[1],
             'getPlace': infos[2],
             'type': infos[3],
@@ -62,7 +64,7 @@ def getInfo(id):
             }
 
 
-def toJson(path, data):
+def toJson(file_name, data):
     def removeDuplicate(data):
         without_duplicates = []
         for d in data:
@@ -72,25 +74,8 @@ def toJson(path, data):
         return without_duplicates
     
     data = removeDuplicate(data)
-    with open(os.path.join(cfg.ROOTDATA, path), 'w', encoding='utf-8') as file:
+    with open(os.path.join(cfg.ROOTDATA, file_name), 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
-
-
-def separate(datas):
-    separate_data = []
-    count = 0
-    file_num = 1
-    for data in datas:
-        count += 1
-        separate_data.append(data)
-        if count == len(datas) // cfg.SEPARATE_NUM and file_num != cfg.SEPARATE_NUM:
-            toJson(f'{file_num}.json', separate_data)
-                
-            count = 0
-            separate_data = []
-            file_num += 1
-
-    toJson(f'{file_num}.json', separate_data)
 
 
 class Crawler:
@@ -100,43 +85,29 @@ class Crawler:
         
     def crawlAll(self, ids):
         for id in ids:          
-            self.info.append({id: getInfo(id)})
+            self.info.append(getInfo(id))
     
     
     def saveJson(self):
-        separate(self.info)
+        toJson(cfg.ALLDATA, self.info)
 
 
 class Updater:
     def __init__(self):
+        with open(os.path.join(cfg.ROOTDATA, cfg.ALLDATA), 'r', encoding='utf-8') as f:
+            self.data = json.load(f)
+
+        self.keys = list(map(lambda x: x['ID'], self.data))            
         self.new_datas = []
-        self.keys = []
-        
-        for file in os.listdir(cfg.ROOTDATA):
-            if file != 'all.json':
-                with open(os.path.join(cfg.ROOTDATA, file), 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                keys = list(map(lambda x: list(x.keys())[0], data))   
-                self.keys.extend(keys)
 
    
     def isCompleteUpdate(self, ids):
         for id in ids:
             if id in self.keys: return False 
-            self.new_datas.append({id: getInfo(id)})
+            self.new_datas.append(getInfo(id))
         return True
     
     
     def makeNewJson(self):
         updated_all_data = self.new_datas
-        file_num = 1
-        
-        if len(updated_all_data) <= cfg.MINIMUM_DATA:
-            toJson(f'{file_num}.json', updated_all_data)
-        
-            for f_num in range(2, cfg.SEPARATE_NUM + 1):
-                toJson(f'{f_num}.json', {})
-
-        else:
-            separate(updated_all_data)
-        
+        toJson(cfg.ALLDATA, updated_all_data)
