@@ -8,7 +8,7 @@
 ```
 pip install -r requirements.txt
 ```
-### 3. 크롤링 실행
+### 3. 유실물 크롤링 실행
 cmd에서 세 가지 옵션으로 크롤링 가능
 1. python3 main.py -o ca
 - ca(crawling all) 옵션은 lost112의 모든 데이터를 크롤링
@@ -20,3 +20,8 @@ cmd에서 세 가지 옵션으로 크롤링 가능
 
 un 옵션은 datas directory에 all.json 파일이 존재할 때만 실행 가능<br>
 현재는 all.json이 database 역할을 하고 있으며, 파일 이름은 config.py의 ALLDATA로 수정 가능
+
+### 4. 뉴스 기사 크롤링 실행
+cmd에서 세 가지 옵션으로 크롤링 가능
+- 최상단 디렉토리에서 하위 명령어 실행
+- python utils/news_crawling.py
