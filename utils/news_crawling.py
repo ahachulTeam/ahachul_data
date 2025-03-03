@@ -28,6 +28,7 @@ class Crawler:
         self.lastPage = 1  # 마지막 페이지 설정 네이버의 경우 상품 리스트가 40개가 안될시 마지막 페이지로 인식
 
     def get_news_contents(self) -> list:
+        print("start news crawling")
         for line in self.lines:
             line_col = f"line_{line}"
             self.total_datas[line_col] = []
@@ -66,6 +67,7 @@ class Crawler:
                     self.total_datas[line_col].append(news_dict)
         print(self.total_datas)
         self.save_to_json()
+        print("결과 파일 저장 완료")
 
     def save_to_json(self) -> None:
         """ 데이터를 JSON 파일로 저장하는 함수 """
