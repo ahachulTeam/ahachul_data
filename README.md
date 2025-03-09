@@ -24,4 +24,15 @@ un 옵션은 datas directory에 all.json 파일이 존재할 때만 실행 가�
 ### 4. 뉴스 기사 크롤링 실행
 cmd에서 세 가지 옵션으로 크롤링 가능
 - 최상단 디렉토리에서 하위 명령어 실행
-- python utils/news_crawling.py
+    ```
+    python utils/news_crawling.py
+    ```
+- 결과 파일 경로
+    ```
+    datas folder > subway_news_data.json
+    ```
+- 뉴스 기사 수집 키워드
+    ```
+  서울 지하철 n호선 +
+  "지연", "운행 중단", "고장", "사고", "혼잡", "폭행", "도난", "파업"
+  ```
