@@ -18,6 +18,7 @@ warnings.filterwarnings('ignore')
 r = redis.Redis(
     host=cfg.REDIS_HOST,
     port=cfg.REDIS_PORT,
+    password=cfg.REDIS_PASSWORD,
     decode_responses=True
 )
 
@@ -26,12 +27,6 @@ def send_message(message: str):
     """
     Redis Stream에 단일 메시지를 XADD
     """
-    r = redis.Redis(
-        host=cfg.REDIS_HOST,
-        port=cfg.REDIS_PORT,
-        decode_responses=True
-    )
-
     # Stream 전송
     r.xadd(cfg.REDIS_STREAM, message)
 
@@ -74,20 +69,37 @@ def getInfo(id):
     infos = [i.text.strip() for i in soup.find_all('p', {'class': 'find02'})]
     title = soup.find('p', {'class': 'find_info_name'}).text.split(':')[-1].strip()
 
-    return {'ID': id,
-            'title': title,
-            'getDate': infos[1],
-            'getPlace': infos[2],
-            'type': infos[3],
-            'receiptPlace': infos[4],
-            'storagePlace': infos[5],
-            'lostStatus': infos[6],
-            'phone': infos[7],
-            'context': getText(soup),
-            'image': cfg.LOSTURL + soup.find('p', {'class': 'lost_img'}).find('img').get('src'),
-            'source': 'lost112',
-            'page': url
-            }
+    return {
+                'ID': id,
+                'title': title,
+                'personName': infos[1],
+                'getDate': infos[2],
+                'getPlace': infos[3],
+                'type': infos[4],
+                'receiptPlace': infos[5],
+                'storagePlace': infos[6],
+                'lostStatus': infos[7],
+                'phone': infos[8],
+                'context': getText(soup),
+                'image': cfg.LOSTURL + soup.find('p', {'class': 'lost_img'}).find('img').get('src'),
+                'source': 'lost112',
+                'page': url
+            } if len(infos) == 9 else \
+     {  
+        'ID': id,
+        'title': title,
+        'getDate': infos[1],
+        'getPlace': infos[2],
+        'type': infos[3],
+        'receiptPlace': infos[4],
+        'storagePlace': infos[5],
+        'lostStatus': infos[6],
+        'phone': infos[7],
+        'context': getText(soup),
+        'image': cfg.LOSTURL + soup.find('p', {'class': 'lost_img'}).find('img').get('src'),
+        'source': 'lost112',
+        'page': url
+    }
 
 
 def toJson(file_name, data):
@@ -108,7 +120,7 @@ def toJson(file_name, data):
     # S3에 업로드 (덮어쓰기)
     s3.put_object(
         Bucket=cfg.S3_BUCKET_NAME,
-        Key=f"{cfg.ROOTDATA.rstrip('/')}/{file_name}",
+        Key=f"{file_name}",
         Body=json_body,
         ContentType='application/json'
     )
@@ -142,7 +154,7 @@ class Updater:
         )
 
         # S3에서 all.json 가져오기
-        key = f"{cfg.ROOTDATA.rstrip('/')}/{cfg.ALLDATA}"
+        key = f"{cfg.ALLDATA}"
         resp = s3.get_object(Bucket=cfg.S3_BUCKET_NAME, Key=key)
         body = resp['Body'].read().decode('utf-8')
         self.data = json.loads(body)
