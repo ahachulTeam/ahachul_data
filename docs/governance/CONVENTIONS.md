@@ -6,7 +6,7 @@
 
 - Common: `docs/governance/CONVENTIONS_COMMON.md`
 - Data Repo: `docs/governance/CONVENTIONS_DATA.md`
-- Backend Stack Reference: `/Users/createahb21/Documents/Programming/repositories/@Ahhachul/ahhachul_backend/docs/governance/CONVENTIONS_BE.md`
+- Backend Stack Reference: `ahhachul_backend/docs/governance/CONVENTIONS_BE.md`
 
 ## Precedence
 
